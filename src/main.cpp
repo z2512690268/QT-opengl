@@ -1,4 +1,4 @@
-#include "widget.h"
+#include "opengl_widget.h"
 
 #include <QApplication>
 
@@ -6,7 +6,7 @@ int main(int argc, char *argv[])
 {
     QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
     QApplication a(argc, argv);
-    Widget w;
+    OpenGLWidget w;
     w.show();
     return a.exec();
 }

@@ -16,11 +16,14 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
-    main.cpp \
-    widget.cpp
+    src/main.cpp \
+    src/opengl_widget.cpp
 
 HEADERS += \
-    widget.h
+    include/opengl_widget.h \
+    opengl_widget.h
+
+INCLUDEPATH += include/
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
@@ -37,3 +40,6 @@ DISTFILES += \
     android/res/values/libs.xml
 
 ANDROID_PACKAGE_SOURCE_DIR = $$PWD/android
+
+RESOURCES += \
+    shader.qrc

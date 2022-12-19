@@ -1,0 +1,26 @@
+{
+    "configurations": [
+        {
+            "name": "Win32",
+            "includePath": [
+                "${default}",
+                "D:\\QT\\Qt5.14.2\\5.14.2\\android\\include\\QtGui\\",
+                "D:\\QT\\Qt5.14.2\\5.14.2\\android\\include\\",
+                "F:\\Android\\Android\\Sdk\\ndk\\21.4.7075529\\sysroot\\usr\\include\\",
+                "D:/QT/Qt5.14.2/5.14.2/android/include/QtWidgets",
+                "F:/Android/Android/Sdk/ndk/21.4.7075529/sysroot/usr/include/aarch64-linux-android",
+                "${workspaceFolder}/include"
+            ],
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE"
+            ],
+            "windowsSdkVersion": "10.0.19041.0",
+            "cStandard": "c17",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "windows-msvc-x64"
+        }
+    ],
+    "version": 4
+}
