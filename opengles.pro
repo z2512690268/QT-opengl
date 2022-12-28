@@ -1,4 +1,5 @@
 QT       += core gui
+QT       += sensors
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -17,10 +18,12 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
     src/main.cpp \
-    src/opengl_widget.cpp
+    src/opengl_widget.cpp \
+    src/qDebug2Logcat.cpp
 
 HEADERS += \
     include/opengl_widget.h \
+    include/qDebug2Logcat.h \
     opengl_widget.h
 
 INCLUDEPATH += include/
@@ -29,17 +32,6 @@ INCLUDEPATH += include/
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
-
-DISTFILES += \
-    android/AndroidManifest.xml \
-    android/build.gradle \
-    android/gradle/wrapper/gradle-wrapper.jar \
-    android/gradle/wrapper/gradle-wrapper.properties \
-    android/gradlew \
-    android/gradlew.bat \
-    android/res/values/libs.xml
-
-ANDROID_PACKAGE_SOURCE_DIR = $$PWD/android
 
 RESOURCES += \
     shader.qrc
