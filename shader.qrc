@@ -3,4 +3,7 @@
         <file>shader/shader.fs</file>
         <file>shader/shader.vs</file>
     </qresource>
+    <qresource prefix="/pic">
+        <file>pic/test.png</file>
+    </qresource>
 </RCC>

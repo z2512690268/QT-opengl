@@ -12,6 +12,9 @@
         "qopenglwidget": "cpp",
         "qopenglshader": "cpp",
         "qopenglbuffer": "cpp",
-        "streambuf": "cpp"
+        "streambuf": "cpp",
+        "qwidget": "cpp",
+        "qimage": "cpp",
+        "qlayout": "cpp"
     }
 }
