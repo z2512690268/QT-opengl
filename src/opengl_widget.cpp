@@ -10,6 +10,9 @@ OpenGLWidget::OpenGLWidget(QWidget *parent)
       m_vbo_2(QOpenGLBuffer::VertexBuffer),
       m_vao_2()
 {
+    setAttribute(Qt::WA_AcceptTouchEvents, true);
+    grabGesture(Qt::PinchGesture);
+    pinchScale = 1.0f;
 }
 
 OpenGLWidget::~OpenGLWidget()
@@ -129,4 +132,53 @@ void OpenGLWidget::makeObject_2()
                                   3, sizeof(float) * 6);
     m_program->enableAttributeArray(attr);
     m_vbo_2.release();
+}
+
+bool OpenGLWidget::event(QEvent *e) {
+    QTouchEvent *touchEvent;
+    QPinchGesture *pinch;
+    switch (e->type()) {
+    case QEvent::Gesture:
+        pinch = static_cast<QPinchGesture *>(static_cast<QGestureEvent *>(e)->gesture(Qt::PinchGesture));
+        pinchScale *= pinch->scaleFactor();
+        // set widget scale
+        
+        qDebug() << "pinch scale" << pinchScale;
+        return true;
+    case QEvent::TouchBegin:
+    case QEvent::TouchUpdate:
+    case QEvent::TouchEnd:
+        touchEvent = static_cast<QTouchEvent *>(e);
+        foreach (QTouchEvent::TouchPoint point, touchEvent->touchPoints()) {
+            int id = point.id();
+            QPointF pos = point.pos();
+            Qt::TouchPointState state = point.state();
+
+            switch (state) {
+                case Qt::TouchPointPressed:
+                    qDebug() << "pressed" << id << "at" << pos;
+                    touches[id] = pos;
+                    break;
+                case Qt::TouchPointMoved:
+                    qDebug() << "moved" << id << "at" << pos;
+                    touches[id] = pos;
+                    break;
+                case Qt::TouchPointStationary:
+                    qDebug() << "stationary" << id << "at" << pos;
+                    //touches[id] = pos;
+                    break;
+                case Qt::TouchPointReleased:
+                    qDebug() << "released" << id << "at" << pos;
+                    touches.remove(id);
+                    break;
+                default:
+                    qDebug() << "!!";
+                    break;
+            }
+        }
+        return true;
+    default:
+        break;
+    }
+    return QOpenGLWidget::event(e);
 }
