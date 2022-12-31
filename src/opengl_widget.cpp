@@ -7,7 +7,13 @@
 #include <QPainter>
 
 #include "LightModel.h"
+extern float Mesh_x;
+extern float Mesh_y;
+extern float Mesh_z;
 
+extern float Camera_x;
+extern float Camera_y;
+extern float Camera_z;
 OpenGLWidget::OpenGLWidget(QWidget *parent)
 	: QOpenGLWidget(parent)
 {
@@ -15,13 +21,13 @@ OpenGLWidget::OpenGLWidget(QWidget *parent)
 	newFormat.setSamples(16);
 	this->setFormat(newFormat);
 
-	startTimer(1000 / 60);
+	startTimer(1000 / 20);
 
 	m_camera.move(-6, 0, 3);
 	m_camera.look(0, 30, 0);
 	m_camera.update();
 
-	m_light.setPos({ 10, 3 , 0 });
+	m_light.setPos({ 0, 0, 0 });
 	m_light.setColor(QColor(255, 255, 255));
 
 	installEventFilter(&m_camera);
@@ -39,21 +45,21 @@ void OpenGLWidget::initializeGL()
 	// glClearColor(_color.x(), _color.y(), _color.z(), 1);
 	// glClearColor(0, 0, 0, 1);
 
-	for (int i = 0; i < 3; ++i)
-	{
-		auto _dice = new Dice();
-		_dice->setCamera(&m_camera);
-		_dice->setLight(&m_light);
-		_dice->setPos({ 0, i * 3.f, 0 });
-		_dice->init();
-		m_models << _dice;
-	}
+	// for (int i = 0; i < 3; ++i)
+	// {
+	// 	auto _dice = new Dice();
+	// 	_dice->setCamera(&m_camera);
+	// 	_dice->setLight(&m_light);
+	// 	_dice->setPos({ 0, i * 3.f, 0 });
+	// 	_dice->init();
+	// 	m_models << _dice;
+	// }
 
 	m_lightModel = new LightModel();
 	m_lightModel->setCamera(&m_camera);
 	m_lightModel->setLight(&m_light);
 	m_lightModel->setPos(m_light.pos());
-	//m_lightModel->setScale(0.1);
+	// m_lightModel->setScale(0.1);
 	m_lightModel->init();
 }
 
@@ -61,10 +67,10 @@ void OpenGLWidget::resizeGL(int w, int h)
 {
 	m_projection.setToIdentity();
 	m_projection.perspective(60, (float)w / h, 0.001, 1000);
-	for (auto dice : m_models)
-	{
-		dice->setProjection(m_projection);
-	}
+	// for (auto dice : m_models)
+	// {
+	// 	dice->setProjection(m_projection);
+	// }
 	m_lightModel->setProjection(m_projection);
 }
 
@@ -75,10 +81,10 @@ void OpenGLWidget::paintGL()
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	for (auto dice : m_models)
-	{
-		dice->paint();
-	}
+	// for (auto dice : m_models)
+	// {
+	// 	dice->paint();
+	// }
 
 	// //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	m_lightModel->paint();
@@ -104,18 +110,25 @@ void OpenGLWidget::timerEvent(QTimerEvent *event)
 {
 	m_camera.update();
 	float _speed = 0.1;
-	for (auto dice : m_models)
-	{
-		float _y = dice->rotate().y() + _speed;
-		if (_y >= 360)
-			_y -= 360;
-		dice->setRotate({ 0, _y, 0 });
-		_speed += 0.1;
-	}
-	//auto _h = m_light.color().hsvHue() + 1;
-	//if (_h >= 360)
-	//	_h -= 360;
-	//m_light.setColor(QColor::fromHsv(_h, 255, 255));
+	// for (auto dice : m_models)
+	// {
+	// 	float _y = dice->rotate().y() + _speed;
+	// 	if (_y >= 360)
+	// 		_y -= 360;
+	// 	dice->setRotate({ 0, _y, 0 });
+	// 	_speed += 0.1;
+	// }
+	auto _h = m_light.color().hsvHue() + 1;
+	if (_h >= 360)
+		_h -= 360;
+	m_light.setColor(QColor::fromHsv(_h, 255, 255));
+
+	qDebug() << "Camera_x: " << Camera_x << "Camera_y: " << Camera_y << "Camera_z: " << Camera_z;
+	qDebug() << "m_camera.pos().x(): " << m_camera.pos().x() << "m_camera.pos().y(): " << m_camera.pos().y() << "m_camera.pos().z(): " << m_camera.pos().z();
+	// m_camera.move();
+	m_camera.setpos(QVector3D(Camera_x, Camera_y, Camera_z));
+	// QVector3D vec(Mesh_x, Mesh_y, Mesh_z);
+	// m_lightModel->setPos(vec);
 
 	// m_lightModel->setPos(m_light.pos());
 	repaint();

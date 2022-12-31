@@ -14,6 +14,7 @@ public:
 public:
 	void look(float yaw, float pitch, float roll);
 	void move(float x, float y, float z);
+	void setpos(const QVector3D &pos) { m_pos = pos; }
 public:
 	QVector3D pos() { return m_pos; }
 	float yaw() { return m_yaw; }
@@ -38,6 +39,6 @@ protected:
 	float m_pitch = 0;
 	float m_roll = 0;
 	QVector3D m_move;
-	float m_lookSpeed = 0.1;
-	float m_moveSpeed = 0.1;
+	float m_lookSpeed = 0.01;
+	float m_moveSpeed = 0.01;
 };

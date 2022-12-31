@@ -8,7 +8,7 @@
 #include <QPushButton>
 int main(int argc, char *argv[])
 {
-    installLogcatMessageHandler("opengles");
+    // installLogcatMessageHandler("opengles");
     QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
     QApplication a(argc, argv);
     OpenGLWidget w2;

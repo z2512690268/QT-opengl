@@ -18,6 +18,7 @@
         "qlayout": "cpp",
         "qopenglextrafunctions": "cpp",
         "qmatrix4x4": "cpp",
-        "ostream": "cpp"
+        "ostream": "cpp",
+        "*.tcc": "cpp"
     }
 }
