@@ -1,184 +1,122 @@
 #include "opengl_widget.h"
+#include <QDebug>
+#include <QOpenGLDebugLogger>
+#include <limits>
+#include <QKeyEvent>
+#include <QMouseEvent>
+#include <QPainter>
+
+#include "LightModel.h"
 
 OpenGLWidget::OpenGLWidget(QWidget *parent)
-    : QOpenGLWidget(parent),
-      m_program(nullptr),
-      m_vbo(QOpenGLBuffer::VertexBuffer),
-      m_matrixUniform(0),
-      m_pMat(),
-      m_vao(),
-      m_vbo_2(QOpenGLBuffer::VertexBuffer),
-      m_vao_2()
+	: QOpenGLWidget(parent)
 {
-    setAttribute(Qt::WA_AcceptTouchEvents, true);
-    grabGesture(Qt::PinchGesture);
-    pinchScale = 1.0f;
+	auto newFormat = this->format();
+	newFormat.setSamples(16);
+	this->setFormat(newFormat);
+
+	startTimer(1000 / 60);
+
+	m_camera.move(-6, 0, 3);
+	m_camera.look(0, 30, 0);
+	m_camera.update();
+
+	m_light.setPos({ 10, 3 , 0 });
+	m_light.setColor(QColor(255, 255, 255));
+
+	installEventFilter(&m_camera);
 }
 
 OpenGLWidget::~OpenGLWidget()
 {
-    m_vbo.destroy();
-    m_vbo_2.destroy();
-
-    m_vao.destroy();
-    m_vao_2.destroy();
 }
 
 void OpenGLWidget::initializeGL()
 {
-    initializeOpenGLFunctions();
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    makeCurrent();
+	initializeOpenGLFunctions();
+	glClearColor(0, 0.5, 0.7, 1);
+	// auto _color = m_light.color();
+	// glClearColor(_color.x(), _color.y(), _color.z(), 1);
+	// glClearColor(0, 0, 0, 1);
 
-    m_vbo.create();
-    m_vbo_2.create();
+	for (int i = 0; i < 3; ++i)
+	{
+		auto _dice = new Dice();
+		_dice->setCamera(&m_camera);
+		_dice->setLight(&m_light);
+		_dice->setPos({ 0, i * 3.f, 0 });
+		_dice->init();
+		m_models << _dice;
+	}
 
-    m_program = new QOpenGLShaderProgram(this);
-    m_program->addShaderFromSourceFile(QOpenGLShader::Vertex,
-                                       ":/shader/shader/shader.vs");
-    m_program->addShaderFromSourceFile(QOpenGLShader::Fragment,
-                                       ":/shader/shader/shader.fs");
-
-    if (!m_program->link()){
-        qWarning() << "Could not link shader program:"
-                   << m_program->log();
-        close();
-    }
-
-    m_matrixUniform = m_program->uniformLocation("matrix");
-
-    makeObject();
-    makeObject_2();
+	m_lightModel = new LightModel();
+	m_lightModel->setCamera(&m_camera);
+	m_lightModel->setLight(&m_light);
+	m_lightModel->setPos(m_light.pos());
+	//m_lightModel->setScale(0.1);
+	m_lightModel->init();
 }
 
 void OpenGLWidget::resizeGL(int w, int h)
 {
-    float aspect = float(w)/float(h?h:1);
-    float fov = 45.0f, zNear = 0.1f, zFar = 100.f;
-    m_pMat.setToIdentity();
-    m_pMat.perspective(fov, aspect, zNear, zFar);
+	m_projection.setToIdentity();
+	m_projection.perspective(60, (float)w / h, 0.001, 1000);
+	for (auto dice : m_models)
+	{
+		dice->setProjection(m_projection);
+	}
+	m_lightModel->setProjection(m_projection);
 }
 
 void OpenGLWidget::paintGL()
 {
-    glClear(GL_COLOR_BUFFER_BIT);
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_CULL_FACE);
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-    m_program->bind();
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	for (auto dice : m_models)
+	{
+		dice->paint();
+	}
 
-    QMatrix4x4 mvMat;
-    mvMat.translate(0.0f, 0.0f, -3.0f);
-    m_program->setUniformValue(m_matrixUniform, m_pMat*mvMat);
-    {
-        QOpenGLVertexArrayObject::Binder vaoBind(&m_vao_2);
-        glDrawArrays(GL_TRIANGLE_STRIP, 0, 3);
-    }
-    {
-        QOpenGLVertexArrayObject::Binder vaoBind(&m_vao);
-        glDrawArrays(GL_TRIANGLE_STRIP, 0, 3);
-    }
-    m_program->release();
+	// //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	m_lightModel->paint();
+
+	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_CULL_FACE);
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	QPainter _painter(this);
+	auto _rect = this->rect();
+	_painter.setPen(Qt::green);
+	_painter.drawLine(_rect.center() + QPoint{ 0, 5 }, _rect.center() + QPoint{ 0, 15 });
+	_painter.drawLine(_rect.center() + QPoint{ 0, -5 }, _rect.center() + QPoint{ 0, -15 });
+	_painter.drawLine(_rect.center() + QPoint{ 5, 0 }, _rect.center() + QPoint{ 15, 0 });
+	_painter.drawLine(_rect.center() + QPoint{ -5, 0 }, _rect.center() + QPoint{ -15, 0 });
+
+	_painter.drawText(QPoint{ 5, 15 }, QString(u8"摄像机位置: (%1, %2, %3)")
+		.arg(m_camera.pos().x(), 0, 'f', 3).arg(m_camera.pos().y(), 0, 'f', 3).arg(m_camera.pos().z(), 0, 'f', 3));
+	_painter.drawText(QPoint{ 5, 30 }, QString(u8"摄像机角度: (%1, %2, %3)")
+		.arg(m_camera.yaw(), 0, 'f', 3).arg(m_camera.pitch(), 0, 'f', 3).arg(m_camera.roll(), 0, 'f', 3));
 }
 
-void OpenGLWidget::makeObject()
+void OpenGLWidget::timerEvent(QTimerEvent *event)
 {
-    makeCurrent();
+	m_camera.update();
+	float _speed = 0.1;
+	for (auto dice : m_models)
+	{
+		float _y = dice->rotate().y() + _speed;
+		if (_y >= 360)
+			_y -= 360;
+		dice->setRotate({ 0, _y, 0 });
+		_speed += 0.1;
+	}
+	//auto _h = m_light.color().hsvHue() + 1;
+	//if (_h >= 360)
+	//	_h -= 360;
+	//m_light.setColor(QColor::fromHsv(_h, 255, 255));
 
-    float arrVertex[] {
-        //   position                 color
-        0.0f, 0.5f, 0.0f,     1.0f, 0.0f, 0.0f,
-        0.0f, -0.5f, 0.0f,     0.0f, 1.0f, 0.0f,
-        -1.0f, 0.0f,  0.0f,     0.0f, 0.0f, 1.0f
-    };
-
-    QOpenGLVertexArrayObject::Binder vaoBind(&m_vao);
-    m_vbo.bind();
-    m_vbo.allocate(arrVertex, sizeof(arrVertex));
-
-    int attr = -1;
-    attr = m_program->attributeLocation("posAttr");
-    m_program->setAttributeBuffer(attr, GL_FLOAT, 0,
-                                  3, sizeof(float) * 6);
-    m_program->enableAttributeArray(attr);
-
-    attr = m_program->attributeLocation("colAttr");
-    m_program->setAttributeBuffer(attr, GL_FLOAT, 3 * sizeof(float),
-                                  3, sizeof(float) * 6);
-    m_program->enableAttributeArray(attr);
-    m_vbo.release();
-}
-void OpenGLWidget::makeObject_2()
-{
-    makeCurrent();
-
-    float arrVertex[] {
-        //   position                 color
-        0.0f, 0.5f, 0.0f,     1.0f, 0.0f, 0.0f,
-        0.0f, -0.5f, 0.0f,     0.0f, 1.0f, 0.0f,
-        1.0f, 0.0f,  0.0f,     0.0f, 0.0f, 1.0f
-    };
-
-    QOpenGLVertexArrayObject::Binder vaoBind(&m_vao_2);
-    m_vbo_2.bind();
-    m_vbo_2.allocate(arrVertex, sizeof(arrVertex));
-
-    int attr = -1;
-    attr = m_program->attributeLocation("posAttr");
-    m_program->setAttributeBuffer(attr, GL_FLOAT, 0,
-                                  3, sizeof(float) * 6);
-    m_program->enableAttributeArray(attr);
-
-    attr = m_program->attributeLocation("colAttr");
-    m_program->setAttributeBuffer(attr, GL_FLOAT, 3 * sizeof(float),
-                                  3, sizeof(float) * 6);
-    m_program->enableAttributeArray(attr);
-    m_vbo_2.release();
-}
-
-bool OpenGLWidget::event(QEvent *e) {
-    QTouchEvent *touchEvent;
-    QPinchGesture *pinch;
-    switch (e->type()) {
-    case QEvent::Gesture:
-        pinch = static_cast<QPinchGesture *>(static_cast<QGestureEvent *>(e)->gesture(Qt::PinchGesture));
-        pinchScale *= pinch->scaleFactor();
-        // set widget scale
-        
-        qDebug() << "pinch scale" << pinchScale;
-        return true;
-    case QEvent::TouchBegin:
-    case QEvent::TouchUpdate:
-    case QEvent::TouchEnd:
-        touchEvent = static_cast<QTouchEvent *>(e);
-        foreach (QTouchEvent::TouchPoint point, touchEvent->touchPoints()) {
-            int id = point.id();
-            QPointF pos = point.pos();
-            Qt::TouchPointState state = point.state();
-
-            switch (state) {
-                case Qt::TouchPointPressed:
-                    qDebug() << "pressed" << id << "at" << pos;
-                    touches[id] = pos;
-                    break;
-                case Qt::TouchPointMoved:
-                    qDebug() << "moved" << id << "at" << pos;
-                    touches[id] = pos;
-                    break;
-                case Qt::TouchPointStationary:
-                    qDebug() << "stationary" << id << "at" << pos;
-                    //touches[id] = pos;
-                    break;
-                case Qt::TouchPointReleased:
-                    qDebug() << "released" << id << "at" << pos;
-                    touches.remove(id);
-                    break;
-                default:
-                    qDebug() << "!!";
-                    break;
-            }
-        }
-        return true;
-    default:
-        break;
-    }
-    return QOpenGLWidget::event(e);
+	// m_lightModel->setPos(m_light.pos());
+	repaint();
 }

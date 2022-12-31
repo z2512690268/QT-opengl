@@ -15,6 +15,9 @@
         "streambuf": "cpp",
         "qwidget": "cpp",
         "qimage": "cpp",
-        "qlayout": "cpp"
+        "qlayout": "cpp",
+        "qopenglextrafunctions": "cpp",
+        "qmatrix4x4": "cpp",
+        "ostream": "cpp"
     }
 }

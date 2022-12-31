@@ -1,53 +1,29 @@
-#ifndef OPENGL_WIDGET_H
-#define OPENGL_WIDGET_H
+#pragma once
 
-#include <QOpenGLFunctions>
-#include <QOpenGLExtraFunctions>
 #include <QOpenGLWidget>
-#include <QOpenGLShader>
-#include <QOpenGLShaderProgram>
-#include <QOpenGLBuffer>
-#include <QOpenGLVertexArrayObject>
-#include <QTouchEvent>
-#include <QWindow>
-#include <QGesture>
-#include <QGestureEvent>
-#include <QTapGesture>
-#include <QPanGesture>
-#include <QPinchGesture>
-#include <QSwipeGesture>
+#include <QOpenGLExtraFunctions>
+#include "Camera.h"
+#include "Dice.h"
 
-class OpenGLWidget : public QOpenGLWidget,
-        protected QOpenGLExtraFunctions
+class OpenGLWidget : public QOpenGLWidget, public QOpenGLExtraFunctions
 {
-    Q_OBJECT
+	Q_OBJECT
 
 public:
-    explicit OpenGLWidget(QWidget *parent = nullptr);
-    ~OpenGLWidget();
-
+	OpenGLWidget(QWidget *parent = nullptr);
+	~OpenGLWidget();
 protected:
-    virtual void initializeGL() override;
-    virtual void resizeGL(int w, int h) override;
-    virtual void paintGL() override;
+	virtual void initializeGL() override;
+	virtual void resizeGL(int w, int h) override;
+	virtual void paintGL() override;
 
-protected:
-    virtual bool event(QEvent *e) override;
+	virtual void timerEvent(QTimerEvent *event);
 
 private:
-    void makeObject();
-    void makeObject_2();
-    void setVertexAttribute();
-private:
-    QOpenGLShaderProgram        *m_program;
-    QOpenGLBuffer               m_vbo;
-    int                         m_matrixUniform;
-    QMatrix4x4                  m_pMat;
-    QOpenGLVertexArrayObject    m_vao;
-    QOpenGLBuffer               m_vbo_2;
-    QOpenGLVertexArrayObject    m_vao_2;
-    QMap<int,QPointF>           touches;
-    float                       pinchScale;
+	QMatrix4x4 m_projection;
+
+	Camera m_camera;
+	Light m_light;
+	QVector<Model *> m_models;
+	Model *m_lightModel;
 };
-
-#endif // OPENGL_WIDGET_

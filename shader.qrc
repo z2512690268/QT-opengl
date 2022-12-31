@@ -2,6 +2,8 @@
     <qresource prefix="/shader">
         <file>shader/shader.fs</file>
         <file>shader/shader.vs</file>
+        <file>shader/fragment.shader</file>
+        <file>shader/vertex.shader</file>
     </qresource>
     <qresource prefix="/pic">
         <file>pic/test.png</file>

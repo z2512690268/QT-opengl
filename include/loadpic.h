@@ -13,7 +13,7 @@ public:
 protected slots:
     void loadPicFromFS();
     void loadPicFromFS2();
-
+    void button3slot();
 signals:
 
 };

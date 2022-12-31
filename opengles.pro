@@ -24,7 +24,12 @@ SOURCES += \
     src/QNavigationWidget.cpp \
     src/QNavigationTab.cpp \
     src/myimage.cpp \
-    src/loadpic.cpp
+    src/loadpic.cpp \
+    src/Camera.cpp \
+    src/Dice.cpp \
+    src/Light.cpp \
+    src/Model.cpp \
+    src/LightModel.cpp
 
 HEADERS += \
     include/opengl_widget.h \
@@ -33,7 +38,12 @@ HEADERS += \
     include/QNavigationWidget.h \
     include/QNavigationTab.h \
     include/myimage.h \
-    include/loadpic.h
+    include/loadpic.h \
+    include/Camera.h \
+    include/Dice.h \
+    include/Light.h \
+    include/Model.h \
+    include/LightModel.h
 
 INCLUDEPATH += include/
 
